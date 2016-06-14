@@ -9,7 +9,13 @@
 
 #define  IMAGEWIDTH    640
 #define  IMAGEHEIGHT   480
-
+/*opencv includes*/
+#include "cv.h"
+#include "highgui.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include "socketSend.h"
+using namespace cv;
 static  int     fd;
 static  struct  v4l2_capability     cap;
         struct  v4l2_fmtdesc        fmtdesc;
@@ -90,7 +96,8 @@ int init_v4l2(void)
 
     // Set format
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+//	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
 	fmt.fmt.pix.height = IMAGEHEIGHT;
 	fmt.fmt.pix.width = IMAGEWIDTH;
 	fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
@@ -185,10 +192,10 @@ int v4l2_grab(void)
 
     // 5. Read buffer////////////////////////////////////
     // Dequeue
-//	if (ioctl(fd, VIDIOC_DQBUF, &buf)) {
-//        perror("Dequeue buffer error:");
-//        return FALSE;
-//    }
+	//if (ioctl(fd, VIDIOC_DQBUF, &buf)) {
+        //perror("Dequeue buffer error:");
+        //return FALSE;
+    //}
     /////////////////////////////////////////////////////
 
     printf("grab yuyv OK\n");
@@ -205,7 +212,7 @@ void yuyv_2_rgb888(void)
     int r1, g1, b1, r2, g2, b2;
     char *pointer;
 
-	pointer = (char* )buffers[0].start;
+	pointer = (char* )buffers[4].start;
     for(i = 0; i < IMAGEHEIGHT; i++)
     {
     	for(j = 0;j < (IMAGEWIDTH/2); j++)
@@ -239,6 +246,12 @@ void yuyv_2_rgb888(void)
     		*(frame_buffer + ((IMAGEHEIGHT-1-i)*(IMAGEWIDTH/2)+j)*6 + 5) = (unsigned char)r2;
     	}
     }
+	IplImage *frame;
+	CvMat cvmat = cvMat( 480, 640, CV_8UC3, (void*)frame_buffer );
+	frame = cvDecodeImage(&cvmat, 1);
+	//轉成Mat再傳socket
+	Mat mat = cvarrToMat(frame);
+	sendMat(mat);
     //printf("change to RGB OK \n");
 }
 int close_v4l2(void)
@@ -344,6 +357,10 @@ void startvedio(void){
 	        buf.index=i;
 		if (ioctl(fd, VIDIOC_QBUF, &buf))perror("Queue buffer error:");
 	}
+	IplImage *frame;
+	CvMat cvmat = cvMat( 480, 640, CV_8UC3, (void*)buffers[4].start );
+	frame = cvDecodeImage(&cvmat, 1);
+	cvSaveImage("img.jpg", frame, 0);
 }
 void endvedio(void){
 	//set origin
@@ -457,7 +474,7 @@ void v4l2_prepare(int i){
 }
 void v4l2_photo(){
 	startvedio();
-	yuyv_2_rgb888();
+//	yuyv_2_rgb888();
 }
 void v4l2_stop(){
 	stop_streaming();
