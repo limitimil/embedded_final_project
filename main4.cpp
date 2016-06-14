@@ -25,23 +25,16 @@ int main(int argc,const char** argv){
 	//prepare socket
 	socket_prepare(argc,argv); /*executable junk ip port*/
 	//prepare step motor
-	printf("what?\n");
 	step_prepare();
-	printf("what?\n");
 	
 	unsigned char* frame_buffer = get_frame_buffer();
 	Mat img;
 	char letter[20];
 	while(1){
-	printf("loop?\n");
 		v4l2_photo();
-	printf("loop?\n");
 		img = makeMat(frame_buffer);
-	printf("loop?\n");
 		sendMat(img);
-	printf("loop?\n");
 		int rst = facedetect_main(img);		
-	printf("loop?\n");
 		printf("detect result :%d\n",rst);
 		get_letter_20(letter);
 		printf("%s\n", letter);//alert function

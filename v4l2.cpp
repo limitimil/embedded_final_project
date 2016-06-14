@@ -93,7 +93,7 @@ int init_v4l2(void)
 	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
 	fmt.fmt.pix.height = IMAGEHEIGHT;
 	fmt.fmt.pix.width = IMAGEWIDTH;
-	fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
+	fmt.fmt.pix.field = V4L2_FIELD_BOTTOM;
 
     // Set the data format
 	if(ioctl(fd, VIDIOC_S_FMT, &fmt) == -1)
@@ -166,12 +166,12 @@ int v4l2_grab(void)
 	}
 
 	// Queue
-	for (n_buffers = 0; n_buffers < req.count; n_buffers++) {
-		buf.index = n_buffers;
+	//for (n_buffers = 0; n_buffers < req.count; n_buffers++) {
+	//	buf.index = n_buffers;
         // Enqueue an empty (capturing) or filled (output) buffer in the driver's incoming queue
-		if (ioctl(fd, VIDIOC_QBUF, &buf))
-            perror("Queue buffer error:");
-	}
+	//	if (ioctl(fd, VIDIOC_QBUF, &buf))
+        //    perror("Queue buffer error:");
+	//}
     /////////////////////////////////////////////////////
 
     // 4. Start capturing////////////////////////////////
@@ -334,15 +334,16 @@ void closeHDMI(){
 }
 void startvedio(void){
 	int i=0;
-	for(;i<req.count;++i){
+	for(i=0;i<req.count;++i){
+	        buf.index=i;
+		if (ioctl(fd, VIDIOC_QBUF, &buf))perror("Queue buffer error:");
+	}
+	
+	for(i=0;i<req.count;++i){
 		if (ioctl(fd, VIDIOC_DQBUF, &buf)) {
 			perror("Dequeue buffer error:");
 			exit(03307);
 		}
-	}
-	for(i=0;i<req.count;++i){
-	        buf.index=i;
-		if (ioctl(fd, VIDIOC_QBUF, &buf))perror("Queue buffer error:");
 	}
 }
 void endvedio(void){
