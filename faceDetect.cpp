@@ -76,8 +76,8 @@ int facedetect_main(Mat& m)
 
 	rst = returnResult( &image_detect );
 	printf( "angle = %lf\n", rst.angle );
-	step_degree(int(125* rst.angle));
-	return rst.stranger;
+
+	return int(125* rst.angle);
 }
 
 
@@ -140,8 +140,14 @@ result returnResult( IplImage *image_detect )
 		{
 			//取得人臉範圍
 			CvRect *rec=(CvRect*)cvGetSeqElem( face,i );
+
+			double angle = 0;
+			double x = rec->x + (double)rec->width / 2;
+
+			angle = ( x / (double)image_detect->width ) - 0.5;
+			angle *= 2;
 	
-			rst.angle += returnAngle( rec, image_detect );
+			rst.angle += angle;
 			//rst.stranger = returnStranger( rec, image_detect );	
 		}
 		rst.angle /= face -> total;

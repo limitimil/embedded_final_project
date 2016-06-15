@@ -46,7 +46,9 @@ void sendMat(Mat& img){
 	char c;
         int imgSize = img.total()* img.elemSize(); 
        	count = send(sock, &img.rows, sizeof(int), 0);
-	printf("%d\n",img.rows); 
+	printf("rows: %d\n",img.rows); 
+	printf("cols: %d\n",img.cols);
+	 
 	printf("Data length %d\n", count);
 
        	count = send(sock, &img.cols, sizeof(int), 0); 
