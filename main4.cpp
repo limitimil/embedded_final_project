@@ -8,8 +8,8 @@
 #define IMAGEWIDTH 640
 #define IMAGEHEIGHT 480
 using namespace cv;
-Mat makeMat(unsigned char* frame){
-	Mat m= Mat::zeros(IMAGEHEIGHT,IMAGEWIDTH,CV_8UC3);
+Mat makeMat(unsigned char* frame, Mat& m){
+	//Mat m= Mat::zeros(IMAGEHEIGHT,IMAGEWIDTH,CV_8UC3);
 	for(int r=0;r< m.rows;r++)
 	for(int c=0;c< m.cols;c++)
 	{
@@ -34,17 +34,18 @@ int main(int argc,const char** argv){
 	step_prepare();
 	
 	unsigned char* frame_buffer = get_frame_buffer();
-	Mat img;
+	Mat img(Mat::zeros(IMAGEHEIGHT,IMAGEWIDTH,CV_8UC3));
 	char letter[20];
 
 	pthread_t t;
 	pthread_attr_t attr;
 	while(1){
 		v4l2_photo();
-		img = makeMat(frame_buffer);
+		makeMat(frame_buffer,img);
 		sendMat(img);
 		int* degree = (int*)malloc(sizeof(int));
-		*degree = facedetect_main(img);		
+		*degree = facedetect_main(img);	
+		*degree /=2;	
 		printf("detect result :%d\n",*degree);
 		pthread_attr_init(&attr);
 		pthread_create(&t,&attr,thread_routine,(void*) degree);
